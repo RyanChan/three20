@@ -120,6 +120,7 @@
   id object = [self tableView:tableView objectForRowAtIndexPath:indexPath];
 
   Class cellClass = [self tableView:tableView cellClassForObject:object];
+//    NSLog(@"%@", NSStringFromClass(cellClass));
   const char* className = class_getName(cellClass);
   NSString* identifier = [[NSString alloc] initWithBytesNoCopy:(char*)className
                                            length:strlen(className)
@@ -132,7 +133,18 @@
     cell = [[[cellClass alloc] initWithStyle:UITableViewCellStyleDefault
                                reuseIdentifier:identifier] autorelease];
      */
-      cell = [self createNewCellWithClass:cellClass identifier:identifier];
+//      cell = [self createNewCellWithClass:cellClass identifier:identifier];
+      id cells = nil;
+      @try {
+          cells = [[NSBundle mainBundle]
+                   loadNibNamed:NSStringFromClass(cellClass) owner:nil options:nil];
+      }
+      @catch (NSException *e) {
+          NSLog(@"NSBundle can't find %@ nib from main bundle", identifier);
+          cells = [[[cellClass alloc] initWithStyle:UITableViewCellStyleDefault
+                                    reuseIdentifier:identifier] autorelease];
+      }
+      cell = [cells isKindOfClass:[NSArray class]] ? [cells objectAtIndex:0] : cells;
   }
   [identifier release];
 
@@ -144,17 +156,6 @@
 
   return cell;
 }
-
-/**
- *
- *
- */
-- (UITableViewCell *)createNewCellWithClass:(Class)klaz identifier:(NSString *)identifier{
-    NSLog(@"Trying to load %@ from nib", identifier);
-    NSArray *cells = [[NSBundle mainBundle] loadNibNamed:identifier owner:nil options:nil];
-    return [cells objectAtIndex:0];
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSArray*)sectionIndexTitlesForTableView:(UITableView*)tableView {
@@ -315,7 +316,7 @@
 
   // This will display an empty white table cell - probably not what you want, but it
   // is better than crashing, which is what happens if you return nil here
-  return [TTTableViewCell class];
+  return [object class];
 }
 
 
