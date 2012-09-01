@@ -128,8 +128,11 @@
   UITableViewCell* cell =
     (UITableViewCell*)[tableView dequeueReusableCellWithIdentifier:identifier];
   if (cell == nil) {
+    /* Hacks for custom cell with nib
     cell = [[[cellClass alloc] initWithStyle:UITableViewCellStyleDefault
                                reuseIdentifier:identifier] autorelease];
+     */
+      cell = [self createNewCellWithClass:cellClass identifier:identifier];
   }
   [identifier release];
 
@@ -140,6 +143,16 @@
   [self tableView:tableView cell:cell willAppearAtIndexPath:indexPath];
 
   return cell;
+}
+
+/**
+ *
+ *
+ */
+- (UITableViewCell *)createNewCellWithClass:(Class)klaz identifier:(NSString *)identifier{
+    NSLog(@"Trying to load %@ from nib", identifier);
+    NSArray *cells = [[NSBundle mainBundle] loadNibNamed:identifier owner:nil options:nil];
+    return [cells objectAtIndex:0];
 }
 
 
